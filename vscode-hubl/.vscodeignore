@@ -1,0 +1,27 @@
+# Source files
+src/**
+**/*.ts
+
+# Config files
+.gitignore
+tsconfig.json
+.eslintrc*
+.prettierrc*
+
+# Development
+node_modules/**
+**/*.map
+
+# Tests
+test/**
+**/*.test.*
+
+# Build artifacts
+*.vsix
+
+# Documentation (keep README)
+CHANGELOG.md
+
+# Git
+.git/**
+.github/**

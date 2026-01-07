@@ -1,6 +1,6 @@
 {
     "name": "@jdrly/prettier-plugin-hubl",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Prettier plugin for HubL (HubSpot templating language) formatting in HTML, CSS, JSX, and TSX files",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
