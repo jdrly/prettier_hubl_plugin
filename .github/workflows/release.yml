@@ -27,7 +27,7 @@ jobs:
 
             - run: npm run test:run
 
-            - run: npm publish --access public
+            - run: npm publish
 
     publish-vscode:
         name: Build VSIX & Create Release
