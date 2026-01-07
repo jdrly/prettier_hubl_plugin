@@ -91,18 +91,214 @@ export const unmaskHublBlocks = (
  * Separates multiple HubL blocks that are on the same line.
  *
  * This is a post-processing step to ensure "one block per line" rule.
+ * Also handles inline control flow with content between blocks.
  *
  * @param source - Source with HubL blocks.
  * @returns Source with blocks separated onto individual lines.
  */
 export const separateBlocksPerLine = (source: string): string => {
-  // Pattern to find multiple HubL blocks on the same line
+  let result = source;
+
+  // Pattern 1: Multiple blocks with only whitespace between them
   // Match: %} followed by whitespace (not newline) then {% or {{
   const multiBlockPattern = /(%}|}}|#})([ \t]+)(\{[%{#])/g;
-
-  return source.replace(multiBlockPattern, (_match, closer, _space, opener) => {
+  result = result.replace(multiBlockPattern, (_match, closer, _space, opener) => {
     return `${closer}\n${opener}`;
   });
+
+  // Pattern 2: Control flow with content - {% if %}content{% else %}content{% endif %}
+  // Split content between control flow blocks onto separate lines
+  result = splitControlFlowContent(result);
+
+  // Pattern 3: Indent content between control flow blocks
+  result = indentControlFlowContent(result);
+
+  return result;
+};
+
+/**
+ * Indents content lines that are between control flow blocks.
+ * This handles the case where content is already on its own line
+ * but needs to be indented relative to the surrounding blocks.
+ *
+ * @param source - Source code.
+ * @returns Source with properly indented content.
+ */
+const indentControlFlowContent = (source: string): string => {
+  const lines = source.split('\n');
+  const resultLines: string[] = [];
+
+  // Track nesting level for control flow
+  let inControlFlow = false;
+  let controlFlowIndent = '';
+  let indentUnit = '    ';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Detect control flow openers: {% if %}, {% for %}, etc.
+    if (/^\{%\s*(?:if|for|unless|while)\b/.test(trimmed)) {
+      const leadingIndent = line.match(/^(\s*)/)?.[1] || '';
+      controlFlowIndent = leadingIndent;
+      indentUnit = detectIndentUnit(leadingIndent);
+      inControlFlow = true;
+      resultLines.push(line);
+      continue;
+    }
+
+    // Detect control flow closers: {% endif %}, {% endfor %}, etc.
+    if (/^\{%\s*end(?:if|for|unless|while)\s*%}/.test(trimmed)) {
+      inControlFlow = false;
+      resultLines.push(line);
+      continue;
+    }
+
+    // Detect middle blocks: {% else %}, {% elif %}
+    if (/^\{%\s*(?:else|elif)\b/.test(trimmed)) {
+      resultLines.push(line);
+      continue;
+    }
+
+    // If we're inside control flow and this is a content line
+    if (inControlFlow && trimmed.length > 0) {
+      const leadingIndent = line.match(/^(\s*)/)?.[1] || '';
+
+      // Check if this is content that should be indented:
+      // - Plain text
+      // - HubL expressions {{ }}
+      // - HubL comments {# #}
+      // NOT: HubL statements {% %} (control flow) or HTML tags
+      const isIndentableContent =
+        !trimmed.startsWith('{%') &&
+        !trimmed.startsWith('<') &&
+        !trimmed.startsWith('</');
+
+      // Check if content is at same indent level as control flow
+      if (isIndentableContent && leadingIndent === controlFlowIndent) {
+        // Indent it one level deeper
+        resultLines.push(`${controlFlowIndent}${indentUnit}${trimmed}`);
+        continue;
+      }
+    }
+
+    resultLines.push(line);
+  }
+
+  return resultLines.join('\n');
+};
+
+/**
+ * Detects the indentation unit (spaces or tab) from existing indentation.
+ *
+ * @param indent - Existing indentation string.
+ * @returns One level of indentation.
+ */
+const detectIndentUnit = (indent: string): string => {
+  if (indent.includes('\t')) {
+    return '\t';
+  }
+  // Try to detect indent size from the string (common: 2 or 4 spaces)
+  if (indent.length >= 4 && indent.length % 4 === 0) {
+    return '    ';
+  }
+  if (indent.length >= 2) {
+    return '  ';
+  }
+  return '    '; // Default to 4 spaces
+};
+
+/**
+ * Splits inline control flow with content onto separate lines.
+ * Content inside control flow is indented one level deeper.
+ *
+ * @param source - Source code.
+ * @returns Source with control flow content on separate lines.
+ */
+const splitControlFlowContent = (source: string): string => {
+  const lines = source.split('\n');
+  const resultLines: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Pattern 1: Full inline pattern on one line
+    // {% if x %}content{% else %}content{% endif %}
+    const inlinePattern =
+      /^(\s*)(\{%\s*(?:if|for|unless|while)\b[^%]*%})([^{<][^{]*?)(\{%\s*(?:else|elif)\s*[^%]*%})([^{<][^{]*?)(\{%\s*end(?:if|for|unless|while)\s*%})(.*)$/;
+
+    const match = line.match(inlinePattern);
+    if (match) {
+      const [, lineIndent, opener, content1, middle, content2, closer, trailing] = match;
+      const c1 = content1.trim();
+      const c2 = content2.trim();
+      const indentUnit = detectIndentUnit(lineIndent);
+
+      if (c1.length > 0 || c2.length > 0) {
+        resultLines.push(`${lineIndent}${opener}`);
+        if (c1.length > 0) resultLines.push(`${lineIndent}${indentUnit}${c1}`);
+        resultLines.push(`${lineIndent}${middle}`);
+        if (c2.length > 0) resultLines.push(`${lineIndent}${indentUnit}${c2}`);
+        resultLines.push(`${lineIndent}${closer}${trailing}`);
+        continue;
+      }
+    }
+
+    // Pattern 2: Content attached after a control block at end of line
+    // {% if x %}content (where content is text, not another tag/block)
+    const contentAfterPattern = /^(\s*)(\{%\s*(?:if|for|unless|while|else|elif)\s*[^%]*%})([a-zA-Z][^\n{<]*)$/;
+    const contentAfterMatch = line.match(contentAfterPattern);
+    if (contentAfterMatch) {
+      const [, lineIndent, block, content] = contentAfterMatch;
+      const c = content.trim();
+      const indentUnit = detectIndentUnit(lineIndent);
+      if (c.length > 0) {
+        resultLines.push(`${lineIndent}${block}`);
+        resultLines.push(`${lineIndent}${indentUnit}${c}`);
+        continue;
+      }
+    }
+
+    // Pattern 3: Content attached before a control block (end/else)
+    // content{% endif %} or content{% else %}
+    const contentBeforePattern = /^(\s*)([a-zA-Z][^\n{<]*)(\{%\s*(?:end(?:if|for|unless|while)|else|elif)\s*[^%]*%})(.*)$/;
+    const contentBeforeMatch = line.match(contentBeforePattern);
+    if (contentBeforeMatch) {
+      const [, lineIndent, content, block, trailing] = contentBeforeMatch;
+      const c = content.trim();
+      const indentUnit = detectIndentUnit(lineIndent);
+      if (c.length > 0) {
+        // Content was inside the block, so it needs extra indent
+        // But the closing block stays at lineIndent level
+        resultLines.push(`${lineIndent}${indentUnit}${c}`);
+        resultLines.push(`${lineIndent}${block}${trailing}`);
+        continue;
+      }
+    }
+
+    // Pattern 4: Simple inline control flow (no else)
+    const simplePattern =
+      /^(\s*)(\{%\s*(?:if|for|unless|while)\b[^%]*%})([^{<][^{]*?)(\{%\s*end(?:if|for|unless|while)\s*%})(.*)$/;
+
+    const simpleMatch = line.match(simplePattern);
+    if (simpleMatch) {
+      const [, lineIndent, opener, content, closer, trailing] = simpleMatch;
+      const c = content.trim();
+      const indentUnit = detectIndentUnit(lineIndent);
+
+      if (c.length > 0) {
+        resultLines.push(`${lineIndent}${opener}`);
+        resultLines.push(`${lineIndent}${indentUnit}${c}`);
+        resultLines.push(`${lineIndent}${closer}${trailing}`);
+        continue;
+      }
+    }
+
+    // No match, keep line as-is
+    resultLines.push(line);
+  }
+
+  return resultLines.join('\n');
 };
 
 /**

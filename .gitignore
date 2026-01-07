@@ -28,3 +28,5 @@ npm-debug.log*
 # Package lock (prefer npm)
 yarn.lock
 pnpm-lock.yaml
+
+example.hubl.html
