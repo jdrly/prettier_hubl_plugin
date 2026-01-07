@@ -17,6 +17,10 @@
         "jinja",
         "syntax highlighting"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jdrly/prettier_hubl_plugin"
+    },
     "main": "./out/extension.js",
     "activationEvents": [],
     "contributes": {
