@@ -1,0 +1,52 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HubL HTML",
+  "scopeName": "text.html.hubl",
+  "patterns": [
+    { "include": "#hubl-comment" },
+    { "include": "#hubl-statement" },
+    { "include": "#hubl-expression" },
+    { "include": "text.html.basic" }
+  ],
+  "repository": {
+    "hubl-comment": {
+      "name": "comment.block.hubl",
+      "begin": "\\{#",
+      "end": "#\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.comment.end.hubl" }
+      }
+    },
+    "hubl-statement": {
+      "name": "meta.statement.hubl",
+      "begin": "\\{%-?",
+      "end": "-?%\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.tag.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.tag.end.hubl" }
+      },
+      "patterns": [
+        { "include": "source.hubl#hubl-content" }
+      ]
+    },
+    "hubl-expression": {
+      "name": "meta.expression.hubl",
+      "begin": "\\{\\{-?",
+      "end": "-?\\}\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.expression.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.expression.end.hubl" }
+      },
+      "patterns": [
+        { "include": "source.hubl#hubl-content" }
+      ]
+    }
+  }
+}

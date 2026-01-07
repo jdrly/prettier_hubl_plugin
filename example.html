@@ -1,0 +1,125 @@
+<!--
+    templateType: blog_listing
+    isAvailableForNewContent: true
+    label: Career Listing Template
+-->
+{% set my_tags = blog_tags('default', 250) %}
+{% extends "./layouts/base.hubl.html" %}
+{% block body no_wrapper=True %}
+{% module "HeroSection" path="../components/modules/HeroSection" enable, no_wrapper=True %}
+{% module "QuoteHeading"
+    path="../components/modules/QuoteHeading"
+    showBadges=false,
+    showHeading=false,
+    showTagline=true,
+    no_wrapper=True %}
+<section
+    id="available-positions"
+    class="border-t border-white/15 submenu-section"
+>
+    <div class="container">
+        <h2 class="text-h4 text-accent-tan pt-36-18 pb-160-60 submenu-text">Available positions</h2>
+        <ul class="lg:max-w-10/12 mx-auto pb-150-70">
+            {% for content in contents %}
+            <li
+                class="peer border-t border-white/15 md:hover:border-t-transparent md:[.peer:hover+&]:border-t-transparent md:transition-all md:duration-200{% if loop.last %} border-b md:hover:border-b-transparent{% endif %}"
+            >
+                <a
+                    href="{{ content.absolute_url }}"
+                    class="flex flex-row items-start md:items-center pl-36-24 py-36-24 rounded-none md:hover:rounded-md overflow-hidden group md:hover:bg-white/5 transition-all duration-300"
+                >
+                    <div
+                        class="text-h3 w-90-45 text-white/50 md:group-hover:text-white transition-all duration-300 shrink-0"
+                    >
+                        {{ "%02d"|format(loop.index) }}
+                    </div>
+                    <div class="flex md:flex-row flex-col items-start md:items-center justify-between grow gap-y-2">
+                        <h3>{{ content.name }}</h3>
+                        <ul class="flex flex-row flex-wrap gap-x-2 gap-y-1">
+                            {% for tag in content.tag_list %}
+                            <li class="text-mono font-mono text-white/50 uppercase">{{ tag.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <svg
+                        class="md:hidden block -mt-1 shrink-0"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="42"
+                        height="42"
+                        viewBox="0 0 42 42"
+                        fill="none"
+                    >
+                        <g clip-path="url(#clip0_10103_17157)">
+                            <path
+                                d="M12.25 21L29.75 21"
+                                stroke="white"
+                                stroke-width="1.5"
+                            />
+                            <path
+                                d="M22.8945 14.2002L29.7022 21.0079L22.8945 27.8155"
+                                stroke="white"
+                                stroke-width="1.5"
+                            />
+                        </g>
+                        <defs>
+                            <clipPath id="clip0_10103_17157">
+                                <rect
+                                    width="42"
+                                    height="42"
+                                    rx="21"
+                                    fill="white"
+                                />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                    <div class="-ml-6 group-hover:ml-6 transition-all duration-300 md:block hidden pr-36-24">
+                        <svg
+                            class="translate-x-full opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-300"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="42"
+                            height="42"
+                            viewBox="0 0 42 42"
+                            fill="none"
+                        >
+                            <g clip-path="url(#clip0_10202_6931)">
+                                <circle
+                                    cx="21"
+                                    cy="21"
+                                    r="21"
+                                    transform="rotate(-90 21 21)"
+                                    fill="#75FFC0"
+                                />
+                                <path
+                                    d="M12.25 21L29.75 21"
+                                    stroke="#121216"
+                                    stroke-width="2"
+                                />
+                                <path
+                                    d="M22.8945 14.2002L29.7022 21.0079L22.8945 27.8155"
+                                    stroke="#121216"
+                                    stroke-width="2"
+                                />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_10202_6931">
+                                    <rect
+                                        width="42"
+                                        height="42"
+                                        rx="21"
+                                        fill="white"
+                                    />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% module "TwoColumnTextBlock" path="../components/modules/TwoColumnTextBlock", no_wrapper=True %}
+{% module "GridBlock" path="../components/modules/GridBlock", no_wrapper=True %}
+{% module "ImageGallery" path="../components/modules/ImageGallery", no_wrapper=True %}
+{% module "CallToAction" path="../components/modules/CallToAction", no_wrapper=True %}
+{% endblock body %}

@@ -1,0 +1,9 @@
+.container { max-width: {{ theme.max_width }}px; margin: 0 auto; }
+{% if theme.use_dark_mode %}
+.dark { background: #000; color: #fff; }
+{% endif %}
+.header {
+{% if theme.header_sticky %}
+position: sticky; top: 0;
+{% endif %}
+}

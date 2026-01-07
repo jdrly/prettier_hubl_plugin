@@ -1,0 +1,39 @@
+{
+  "comments": {
+    "blockComment": ["{#", "#}"]
+  },
+  "brackets": [
+    ["{%", "%}"],
+    ["{{", "}}"],
+    ["{#", "#}"],
+    ["<", ">"],
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  "autoClosingPairs": [
+    { "open": "{%", "close": " %}" },
+    { "open": "{{", "close": " }}" },
+    { "open": "{#", "close": " #}" },
+    { "open": "<", "close": ">" },
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" }
+  ],
+  "surroundingPairs": [
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" },
+    { "open": "<", "close": ">" },
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" }
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*{%\\s*(if|for|block|macro|call|filter|raw)\\b",
+      "end": "^\\s*{%\\s*end(if|for|block|macro|call|filter|raw)\\b"
+    }
+  }
+}

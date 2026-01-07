@@ -1,0 +1,134 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HubL",
+  "scopeName": "source.hubl",
+  "patterns": [
+    { "include": "#hubl-comment" },
+    { "include": "#hubl-statement" },
+    { "include": "#hubl-expression" }
+  ],
+  "repository": {
+    "hubl-comment": {
+      "name": "comment.block.hubl",
+      "begin": "\\{#",
+      "end": "#\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.comment.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.comment.end.hubl" }
+      }
+    },
+    "hubl-statement": {
+      "name": "meta.statement.hubl",
+      "begin": "\\{%-?",
+      "end": "-?%\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.tag.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.tag.end.hubl" }
+      },
+      "patterns": [
+        { "include": "#hubl-content" }
+      ]
+    },
+    "hubl-expression": {
+      "name": "meta.expression.hubl",
+      "begin": "\\{\\{-?",
+      "end": "-?\\}\\}",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.expression.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.expression.end.hubl" }
+      },
+      "patterns": [
+        { "include": "#hubl-content" }
+      ]
+    },
+    "hubl-content": {
+      "patterns": [
+        { "include": "#hubl-string-double" },
+        { "include": "#hubl-string-single" },
+        { "include": "#hubl-keyword" },
+        { "include": "#hubl-builtin" },
+        { "include": "#hubl-boolean" },
+        { "include": "#hubl-number" },
+        { "include": "#hubl-operator" },
+        { "include": "#hubl-punctuation" },
+        { "include": "#hubl-variable" },
+        { "include": "#hubl-filter" }
+      ]
+    },
+    "hubl-string-double": {
+      "name": "string.quoted.double.hubl",
+      "begin": "\"",
+      "end": "\"",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.hubl" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.hubl",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "hubl-string-single": {
+      "name": "string.quoted.single.hubl",
+      "begin": "'",
+      "end": "'",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.hubl" }
+      },
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end.hubl" }
+      },
+      "patterns": [
+        {
+          "name": "constant.character.escape.hubl",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "hubl-keyword": {
+      "name": "keyword.control.hubl",
+      "match": "\\b(if|elif|else|endif|for|endfor|in|not|and|or|is|block|endblock|extends|include|import|from|as|with|endwith|set|macro|endmacro|call|endcall|filter|endfilter|raw|endraw|unless|endunless|while|endwhile|switch|case|default|endswitch|break|continue|module|widget_block|widget_attribute|require_css|require_js|print|do)\\b"
+    },
+    "hubl-builtin": {
+      "name": "support.function.builtin.hubl",
+      "match": "\\b(range|lipsum|dict|cycler|joiner|namespace|content|content_by_id|content_by_ids|blog_topics|blog_tags|blog_authors|blog_recent_posts|blog_recent_tag_posts|blog_recent_author_posts|menu|type|theme|request|local_dt|today|now|content_attribute|hubdb_table|hubdb_table_rows|hubdb_table_row|crm_objects|crm_object|crm_associations|personalization_token|contact|company|deal|ticket|product|line_item|quote|feedback_submission|get_asset_url|static_asset|resize_image_url|module_asset_url|hs_color|color_variant|color_contrast|truncate|truncatehtml|datetimeformat|unixtimestamp|strtotime|center|filesizeformat|pprint|urlize|format|striptags|safe|escape|forceescape|e|abs|attr|batch|capitalize|default|d|dictsort|first|float|groupby|indent|int|join|last|length|list|lower|map|max|min|random|reject|rejectattr|replace|reverse|round|select|selectattr|slice|sort|string|sum|title|trim|unique|upper|urlencode|wordcount|wordwrap|xmlattr|tojson|fromjson|regex_replace|regex_match|split|geo_distance|to_local_time|format_date|format_datetime|format_time|between_times|strftime|ipaddr|symmetric_difference|union|intersect|difference|log|root|divide_and_floor|multiply|plus|minus|render|render_partial_tag)\\b"
+    },
+    "hubl-boolean": {
+      "name": "constant.language.boolean.hubl",
+      "match": "\\b(true|false|True|False|none|None)\\b"
+    },
+    "hubl-number": {
+      "name": "constant.numeric.hubl",
+      "match": "\\b-?\\d+(\\.\\d+)?\\b"
+    },
+    "hubl-operator": {
+      "name": "keyword.operator.hubl",
+      "match": "(==|!=|<=|>=|<>|<|>|\\+|-|\\*|/|%|\\||~|\\^)"
+    },
+    "hubl-punctuation": {
+      "name": "punctuation.hubl",
+      "match": "[.,:\\[\\]\\(\\)\\{\\}]"
+    },
+    "hubl-variable": {
+      "name": "variable.other.hubl",
+      "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+    },
+    "hubl-filter": {
+      "match": "(\\|)\\s*([a-zA-Z_][a-zA-Z0-9_]*)",
+      "captures": {
+        "1": { "name": "keyword.operator.filter.hubl" },
+        "2": { "name": "support.function.filter.hubl" }
+      }
+    }
+  }
+}

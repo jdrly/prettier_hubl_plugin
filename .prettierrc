@@ -1,0 +1,22 @@
+{
+  "plugins": ["./dist/index.js"],
+  "trailingComma": "all",
+  "singleQuote": true,
+  "semi": true,
+  "tabWidth": 4,
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": ["*.hubl.html", "example.html"],
+      "options": {
+        "parser": "hubl-html"
+      }
+    },
+    {
+      "files": "*.hubl.css",
+      "options": {
+        "parser": "hubl-css"
+      }
+    }
+  ]
+}

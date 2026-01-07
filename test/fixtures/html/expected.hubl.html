@@ -1,0 +1,42 @@
+<!--
+    templateType: blog_listing
+    isAvailableForNewContent: true
+    label: Career Listing Template
+-->
+{% set my_tags = blog_tags('default', 250) %}
+{% extends "./layouts/base.hubl.html" %}
+{% block body no_wrapper=True %}
+{% module "HeroSection" path="../components/modules/HeroSection" enable, no_wrapper=True %}
+{% module "QuoteHeading"
+  path="../components/modules/QuoteHeading"
+  showBadges=false,
+  showHeading=false,
+  showTagline=true,
+  no_wrapper=True %}
+<section id="available-positions" class="border-t border-white/15 submenu-section">
+    <div class="container">
+        <h2 class="text-h4 text-accent-tan pt-36-18 pb-160-60 submenu-text">Available positions</h2>
+        <ul class="lg:max-w-10/12 mx-auto pb-150-70">
+            {% for content in contents %}
+            <li class="peer border-t border-white/15">
+                <a href="{{ content.absolute_url }}" class="flex flex-row items-start">
+                    <div class="text-h3 w-90-45">{{ "%02d"|format(loop.index) }}</div>
+                    <div class="flex md:flex-row flex-col">
+                        <h3>{{ content.name }}</h3>
+                        <ul class="flex flex-row flex-wrap gap-x-2">
+                            {% for tag in content.tag_list %}
+                            <li class="text-mono font-mono text-white/50 uppercase">{{ tag.name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</section>
+{% module "TwoColumnTextBlock" path="../components/modules/TwoColumnTextBlock", no_wrapper=True %}
+{% module "GridBlock" path="../components/modules/GridBlock", no_wrapper=True %}
+{% module "ImageGallery" path="../components/modules/ImageGallery", no_wrapper=True %}
+{% module "CallToAction" path="../components/modules/CallToAction", no_wrapper=True %}
+{% endblock body %}

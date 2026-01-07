@@ -1,0 +1,109 @@
+{
+    "name": "vscode-hubl",
+    "displayName": "HubL Language Support",
+    "description": "Syntax highlighting for HubL (HubSpot templating language) in HTML, CSS, JSX, and TSX files",
+    "version": "1.0.0",
+    "publisher": "hubl",
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "keywords": [
+        "hubl",
+        "hubspot",
+        "template",
+        "jinja",
+        "syntax highlighting"
+    ],
+    "main": "./out/extension.js",
+    "activationEvents": [],
+    "contributes": {
+        "languages": [
+            {
+                "id": "hubl-html",
+                "aliases": [
+                    "HubL HTML",
+                    "hubl-html"
+                ],
+                "extensions": [
+                    ".hubl.html"
+                ],
+                "configuration": "./language-configuration.json"
+            },
+            {
+                "id": "hubl-css",
+                "aliases": [
+                    "HubL CSS",
+                    "hubl-css"
+                ],
+                "extensions": [
+                    ".hubl.css"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "hubl-html",
+                "scopeName": "text.html.hubl",
+                "path": "./syntaxes/hubl-html.tmLanguage.json",
+                "embeddedLanguages": {
+                    "text.html.basic": "html",
+                    "source.css": "css",
+                    "source.js": "javascript"
+                }
+            },
+            {
+                "language": "hubl-css",
+                "scopeName": "source.css.hubl",
+                "path": "./syntaxes/hubl-css.tmLanguage.json",
+                "embeddedLanguages": {
+                    "source.css": "css"
+                }
+            },
+            {
+                "scopeName": "source.hubl",
+                "path": "./syntaxes/hubl.tmLanguage.json"
+            },
+            {
+                "scopeName": "injection.hubl.html",
+                "path": "./syntaxes/hubl-injection-html.tmLanguage.json",
+                "injectTo": [
+                    "text.html.basic",
+                    "text.html.derivative"
+                ]
+            },
+            {
+                "scopeName": "injection.hubl.css",
+                "path": "./syntaxes/hubl-injection-css.tmLanguage.json",
+                "injectTo": [
+                    "source.css"
+                ]
+            },
+            {
+                "scopeName": "injection.hubl.jsx",
+                "path": "./syntaxes/hubl-injection-jsx.tmLanguage.json",
+                "injectTo": [
+                    "source.js",
+                    "source.jsx",
+                    "source.ts",
+                    "source.tsx"
+                ]
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "package": "vsce package"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.3.0",
+        "@vscode/vsce": "^3.7.1"
+    }
+}
