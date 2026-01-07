@@ -63,7 +63,8 @@ Module statements are formatted with special rules:
   showBadges=false
   showHeading=false
   showTagline=true
-  no_wrapper=True %}
+  no_wrapper=True 
+%}
 ```
 
 ### Comma Preservation
@@ -118,7 +119,8 @@ path="../components/modules/QuoteHeading" showBadges=false, showHeading=false, s
   showBadges=false,
   showHeading=false,
   showTagline=true,
-  no_wrapper=True %}
+  no_wrapper=True 
+%}
 ```
 
 ## Development
