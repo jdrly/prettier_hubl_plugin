@@ -50,6 +50,10 @@ jobs:
               working-directory: vscode-hubl
               run: npx @vscode/vsce package
 
+            - name: Publish to Open VSX
+              working-directory: vscode-hubl
+              run: npx ovsx publish *.vsix -p ${{ secrets.OVSX_PAT }}
+
             - name: Create GitHub Release
               uses: softprops/action-gh-release@v2
               with:
