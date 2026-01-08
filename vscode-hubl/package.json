@@ -2,7 +2,7 @@
     "name": "vscode-hubl",
     "displayName": "HubL Language Support",
     "description": "Syntax highlighting for HubL (HubSpot templating language) in HTML, CSS, JSX, and TSX files",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "publisher": "jdrly",
     "engines": {
         "vscode": "^1.85.0"
