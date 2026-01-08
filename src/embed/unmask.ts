@@ -88,10 +88,55 @@ export const unmaskHublBlocks = (
 };
 
 /**
+ * Checks if a position in the source is inside an HTML attribute value.
+ *
+ * @param source - The source string.
+ * @param position - Position to check.
+ * @returns True if position is inside a quoted attribute value.
+ */
+const isPositionInsideAttribute = (source: string, position: number): boolean => {
+  let inString = false;
+  let stringChar: '"' | "'" | null = null;
+
+  for (let i = 0; i < position && i < source.length; i++) {
+    const char = source[i];
+
+    // Skip HubL blocks entirely (they can contain quotes)
+    if (char === '{' && i + 1 < source.length) {
+      const next = source[i + 1];
+      if (next === '%' || next === '{' || next === '#') {
+        const closeMap: Record<string, string> = { '%': '%}', '{': '}}', '#': '#}' };
+        const closeTag = closeMap[next];
+        const closeIndex = source.indexOf(closeTag, i + 2);
+        if (closeIndex !== -1) {
+          i = closeIndex + closeTag.length - 1;
+          continue;
+        }
+      }
+    }
+
+    if (!inString && (char === '"' || char === "'")) {
+      // Check if this looks like an attribute (preceded by =)
+      const before = source.slice(Math.max(0, i - 20), i);
+      if (/=\s*$/.test(before)) {
+        inString = true;
+        stringChar = char;
+      }
+    } else if (inString && char === stringChar) {
+      inString = false;
+      stringChar = null;
+    }
+  }
+
+  return inString;
+};
+
+/**
  * Separates multiple HubL blocks that are on the same line.
  *
  * This is a post-processing step to ensure "one block per line" rule.
  * Also handles inline control flow with content between blocks.
+ * Does NOT add newlines for blocks inside HTML attribute values.
  *
  * @param source - Source with HubL blocks.
  * @returns Source with blocks separated onto individual lines.
@@ -101,8 +146,13 @@ export const separateBlocksPerLine = (source: string): string => {
 
   // Pattern 1: Multiple blocks with only whitespace between them
   // Match: %} followed by whitespace (not newline) then {% or {{
+  // BUT only if not inside an attribute value
   const multiBlockPattern = /(%}|}}|#})([ \t]+)(\{[%{#])/g;
-  result = result.replace(multiBlockPattern, (_match, closer, _space, opener) => {
+  result = result.replace(multiBlockPattern, (_match, closer, _space, opener, offset) => {
+    // Don't add newlines between blocks inside attribute values
+    if (isPositionInsideAttribute(result, offset)) {
+      return `${closer} ${opener}`;
+    }
     return `${closer}\n${opener}`;
   });
 
@@ -120,6 +170,7 @@ export const separateBlocksPerLine = (source: string): string => {
  * Indents content lines that are between control flow blocks.
  * This handles the case where content is already on its own line
  * but needs to be indented relative to the surrounding blocks.
+ * Skips lines that are inside HTML attribute strings.
  *
  * @param source - Source code.
  * @returns Source with properly indented content.
@@ -136,6 +187,12 @@ const indentControlFlowContent = (source: string): string => {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
+
+    // Skip processing if we're inside an HTML attribute string
+    if (isInsideAttributeString(lines, i)) {
+      resultLines.push(line);
+      continue;
+    }
 
     // Detect control flow openers: {% if %}, {% for %}, etc.
     if (/^\{%\s*(?:if|for|unless|while)\b/.test(trimmed)) {
@@ -209,8 +266,63 @@ const detectIndentUnit = (indent: string): string => {
 };
 
 /**
+ * Checks if a line is inside an unclosed HTML attribute string.
+ * Tracks quote state across lines.
+ *
+ * @param lines - All source lines.
+ * @param lineIndex - Current line index.
+ * @returns True if line is inside an attribute string.
+ */
+const isInsideAttributeString = (lines: readonly string[], lineIndex: number): boolean => {
+  let inString = false;
+  let stringChar: '"' | "'" | null = null;
+
+  // Check all lines before the current one
+  for (let i = 0; i < lineIndex; i++) {
+    const line = lines[i];
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
+
+      // Skip HubL blocks entirely (they can contain quotes)
+      if (char === '{' && j + 1 < line.length) {
+        const next = line[j + 1];
+        if (next === '%' || next === '{' || next === '#') {
+          // Find the closing tag
+          const closeMap: Record<string, string> = {
+            '%': '%}',
+            '{': '}}',
+            '#': '#}',
+          };
+          const closeTag = closeMap[next];
+          const closeIndex = line.indexOf(closeTag, j + 2);
+          if (closeIndex !== -1) {
+            j = closeIndex + closeTag.length - 1;
+            continue;
+          }
+        }
+      }
+
+      if (!inString && (char === '"' || char === "'")) {
+        // Check if this looks like an attribute (preceded by =)
+        const before = line.slice(0, j).trimEnd();
+        if (before.endsWith('=')) {
+          inString = true;
+          stringChar = char;
+        }
+      } else if (inString && char === stringChar) {
+        inString = false;
+        stringChar = null;
+      }
+    }
+  }
+
+  return inString;
+};
+
+/**
  * Splits inline control flow with content onto separate lines.
  * Content inside control flow is indented one level deeper.
+ * Skips processing for lines inside HTML attribute strings.
  *
  * @param source - Source code.
  * @returns Source with control flow content on separate lines.
@@ -221,6 +333,13 @@ const splitControlFlowContent = (source: string): string => {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
+
+    // Skip processing if we're inside an HTML attribute string
+    // This handles multi-line attribute values with HubL
+    if (isInsideAttributeString(lines, i)) {
+      resultLines.push(line);
+      continue;
+    }
 
     // Pattern 1: Full inline pattern on one line
     // {% if x %}content{% else %}content{% endif %}

@@ -60,9 +60,20 @@ const createPlaceholderId = (index: number): string => {
  *
  * @param id - Placeholder ID.
  * @param language - Host language.
+ * @param insideAttribute - Whether the block is inside an HTML attribute value.
  * @returns Full placeholder string.
  */
-const createPlaceholder = (id: string, language: HostLanguage): string => {
+const createPlaceholder = (
+  id: string,
+  language: HostLanguage,
+  insideAttribute = false
+): string => {
+  // For blocks inside HTML attribute values, use a simple text placeholder
+  // HTML comments are invalid inside attribute values
+  if (insideAttribute && language === 'html') {
+    return id;
+  }
+
   switch (language) {
     case 'html':
       return `<!--${id}-->`;
@@ -80,6 +91,10 @@ const createPlaceholder = (id: string, language: HostLanguage): string => {
 
 /**
  * Masks HubL blocks in source code with placeholders.
+ *
+ * Blocks inside HTML attribute values use text placeholders instead of
+ * HTML comments, since comments are invalid inside attribute values.
+ * Whitespace between blocks inside attributes is normalized to single spaces.
  *
  * @param source - Original source code.
  * @param language - Host language type.
@@ -104,14 +119,25 @@ export const maskHublBlocks = (
   const blockMap = new Map<string, MaskedBlock>();
   let result = '';
   let lastEnd = 0;
+  let prevInsideAttribute = false;
 
   skipResults.forEach((skipResult, index) => {
     const { block, skip, reason } = skipResult;
-    const id = createPlaceholderId(index);
-    const placeholder = createPlaceholder(id, language);
+    const insideAttribute = reason === 'Inside HTML attribute value';
 
-    // Add content before this block
-    result += source.slice(lastEnd, block.start);
+    // Get content before this block
+    let contentBefore = source.slice(lastEnd, block.start);
+
+    // If both previous and current blocks are inside the same attribute,
+    // normalize whitespace (collapse newlines/spaces to single space)
+    if (prevInsideAttribute && insideAttribute && /\s/.test(contentBefore)) {
+      contentBefore = contentBefore.replace(/\s+/g, ' ');
+    }
+
+    result += contentBefore;
+
+    const id = createPlaceholderId(index);
+    const placeholder = createPlaceholder(id, language, insideAttribute);
 
     // Get base indentation at this position
     const baseIndent = getIndentAtPosition(source, block.start);
@@ -130,6 +156,7 @@ export const maskHublBlocks = (
     result += placeholder;
 
     lastEnd = block.end;
+    prevInsideAttribute = insideAttribute;
   });
 
   // Add remaining content
